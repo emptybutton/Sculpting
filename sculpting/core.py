@@ -129,8 +129,7 @@ class Sculpture(Generic[MappedT]):
         self.__validate_availability_for(attribute_name)
 
         return self.__attribute_map_by_virtual_attribute_name[attribute_name].getter(
-            self.__mapped,
-            attribute_name
+            self.__mapped
         )
 
     def __setattr__(self, attribute_name: str, attribute_value: Any) -> Any:
