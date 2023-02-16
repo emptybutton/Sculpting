@@ -19,7 +19,7 @@ _MAGIC_METHODS_NAMES: Final[Tuple[str]] = (
 )
 
 
-def method_proxies_to_attribute(attribute_name: str, method_names: Iterable[str]) -> dirty[reformer_of[type]]:
+def _method_proxies_to_attribute(attribute_name: str, method_names: Iterable[str]) -> dirty[reformer_of[type]]:
     @returnly
     def decorator(type_: type, attribute_name: str) -> type:
         if attribute_name[:2] == '__':
@@ -31,8 +31,8 @@ def method_proxies_to_attribute(attribute_name: str, method_names: Iterable[str]
     return decorator |by| attribute_name
 
 
-def _proxy_method_to_attribute(attribute_name: str, method_name: str, type_: type) -> None:
     def method_wrapper(instance: object, *args, **kwargs):
+def _proxy_method_to_attribute(attribute_name: str, method_name: str, type_: type) -> Callable[[object, ...], Any]:
         return getattr(getattr(instance, attribute_name), method_name)(*args, **kwargs)
 
     setattr(
@@ -79,8 +79,8 @@ property_attribute_map: Callable[[attribute_getter], AttributeMap] = (
 
 mapped = TypeVar("mapped")
 
+@_method_proxies_to_attribute("__mapped", set(_MAGIC_METHODS_NAMES) - {"__repr__", "__str__"})
 
-@method_proxies_to_attribute("__mapped", set(_MAGIC_METHODS_NAMES) - {"__repr__", "__str__"})
 class AttributeMapper(Generic[mapped]):
     def __init__(
         self,
