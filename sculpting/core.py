@@ -142,7 +142,7 @@ class Sculpture(Generic[MappedT]):
     def __validate_availability_for(self, attribute_name: str) -> None:
         if attribute_name not in self.__attribute_map_by_virtual_attribute_name.keys():
             raise AttributeError(
-                f"Attribute \"{attribute_name}\" is not allowed in AttributeMapper for {self.__mapped}"
+                f"Attribute \"{attribute_name}\" is not allowed in {self.__repr__()}"
             )
 
     @staticmethod
