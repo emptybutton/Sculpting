@@ -25,21 +25,21 @@ def _method_proxies_to_attribute(attribute_name: str, method_names: Iterable[str
         if attribute_name[:2] == '__':
             attribute_name = f"_{type_.__name__}{attribute_name}"
 
-        for methods_name in method_names:
-            _proxy_method_to_attribute(attribute_name, methods_name, type_)
+        for method_name in method_names:
+            setattr(
+                type_,
+                method_name,
+                _proxy_method_to_attribute(attribute_name, method_name, type_)
+            )
 
     return decorator |by| attribute_name
 
 
-    def method_wrapper(instance: object, *args, **kwargs):
 def _proxy_method_to_attribute(attribute_name: str, method_name: str, type_: type) -> Callable[[object, ...], Any]:
+    def method_wrapper(instance: object, *args, **kwargs) -> Any:
         return getattr(getattr(instance, attribute_name), method_name)(*args, **kwargs)
 
-    setattr(
-        type_,
-        method_name,
-        method_wrapper
-    )
+    return method_wrapper
 
 
 def _dict_value_map(value_transformer: handler, dict_: dict) -> dict:
