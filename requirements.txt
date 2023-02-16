@@ -1,0 +1,2 @@
+pyannotating==1.2.1
+Pyhandling==2.2.0
