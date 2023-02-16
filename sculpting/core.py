@@ -97,7 +97,7 @@ attribute_map_for: Callable[[str], AttributeMap] = mergely(
 )
 
 
-property_attribute_map: Callable[[attribute_getter], AttributeMap] = (
+property_attribute_map_as: Callable[[attribute_getter], AttributeMap] = documenting_by(
     AttributeMap |by| event_as(raise_, AttributeError("Attribute cannot be set"))
 )
 
@@ -157,6 +157,6 @@ class Sculpture(Generic[MappedT]):
     ) -> AttributeMap[MappedT]:
             return attribute_map_resource
         elif callable(attribute_map_resource):
-            return property_attribute_map(attribute_map_resource)
+            return property_attribute_map_as(attribute_map_resource)
         else:
             return attribute_map_for(attribute_map_resource)
