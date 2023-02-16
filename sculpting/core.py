@@ -122,21 +122,24 @@ class Sculpture(Generic[MappedT]):
         if attribute_name[:1] == '_':
             return object.__getattribute__(self, attribute_name)
 
+        self.__validate_availability_for(attribute_name)
+
         return self.__attribute_map_by_virtual_attribute_name[attribute_name].getter(
             self.__mapped,
             attribute_name
         )
 
     def __setattr__(self, attribute_name: str, attribute_value: Any) -> Any:
-        self.__validate_availability_for(attribute_name)
-
         if attribute_name[:1] == '_':
             super().__setattr__(attribute_name, attribute_value)
-        else:
-            return self.__attribute_map_by_virtual_attribute_name[attribute_name].setter(
-                self.__mapped,
-                attribute_value
-            )
+            return
+
+        self.__validate_availability_for(attribute_name)
+
+        return self.__attribute_map_by_virtual_attribute_name[attribute_name].setter(
+            self.__mapped,
+            attribute_value
+        )
 
     def __validate_availability_for(self, attribute_name: str) -> None:
         if attribute_name not in self.__attribute_map_by_virtual_attribute_name.keys():
