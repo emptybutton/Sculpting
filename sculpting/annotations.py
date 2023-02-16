@@ -4,6 +4,9 @@ from pyannotating import AnnotationTemplate, input_annotation
 from pyhandling.annotations import handler_of
 
 
+__all__ = ("attribute_getter_of", "attribute_setter_of", "attribute_getter", "attribute_setter")
+
+
 attribute_getter_of = handler_of
 attribute_setter_of = AnnotationTemplate(Callable, [[input_annotation, Any], Any])
 
