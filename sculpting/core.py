@@ -114,8 +114,7 @@ class Sculpture(Generic[MappedT]):
         )
 
     def __repr__(self) -> str:
-        return f"Mapped {self.__mapped}"
-
+        return f"Sculpture from {self.__mapped}"
 
     def __getattr__(self, attribute_name: str) -> Any:
         if attribute_name[:1] == '_':
