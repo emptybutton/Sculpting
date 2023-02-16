@@ -112,6 +112,14 @@ MappedT = TypeVar("mapped")
 
 @_method_proxies_to_attribute("__mapped", set(_MAGIC_METHODS_NAMES) - {"__repr__", "__str__"})
 class Sculpture(Generic[MappedT]):
+    """
+    Virtual attribute mapping class for a real object.
+
+    Virtual attributes are given keyword arguments as keys.
+    Values can be either the name of a real attribute of the original object, an
+    AttributeMap, or a function to get the value of this attribute from the
+    original object (in which case the attribute cannot be changed).
+    """
 
     def __init__(
         self,
@@ -150,6 +158,11 @@ class Sculpture(Generic[MappedT]):
         )
 
     def __validate_availability_for(self, attribute_name: str) -> None:
+        """
+        Method of validation and possible subsequent error about the absence
+        of such a virtual attribute.
+        """
+
         if attribute_name not in self.__attribute_map_by_virtual_attribute_name.keys():
             raise AttributeError(
                 f"Attribute \"{attribute_name}\" is not allowed in {self.__repr__()}"
