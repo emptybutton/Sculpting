@@ -154,6 +154,7 @@ class Sculpture(Generic[MappedT]):
     def __convert_attribute_map_resource_to_attribute_map(
         attribute_map_resource: str | AttributeMap[MappedT] | attribute_getter_of[MappedT]
     ) -> AttributeMap[MappedT]:
+        if isinstance(attribute_map_resource, AttributeMap):
             return attribute_map_resource
         elif callable(attribute_map_resource):
             return property_attribute_map_as(attribute_map_resource)
