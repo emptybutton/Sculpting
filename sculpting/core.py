@@ -5,6 +5,7 @@ from pyhandling import returnly, by, mergely, take, close, post_partial, event_a
 from pyhandling.annotations import dirty, reformer_of, handler
 
 from sculpting.annotations import attribute_getter_of, attribute_setter_of, attribute_getter, attribute_setter
+from sculpting.tools import setting_of_attr
 
 
 _MAGIC_METHODS_NAMES: Final[Tuple[str]] = (
@@ -67,13 +68,6 @@ def _dict_value_map(value_transformer: handler, dict_: dict) -> dict:
         _: value_transformer(value)
         for _, value in dict_.items()
     }
-
-
-def setting_of(attribute_name: str) -> attribute_setter:
-    def wrapper(object_: object, value: Any) -> Any:
-        return setattr(object_, attribute_name, value)
-
-    return wrapper
 
 
 AttributeOwnerT = TypeVar("AttributeOwnerT")
