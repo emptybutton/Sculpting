@@ -6,6 +6,9 @@ from pyhandling.annotations import handler
 from sculpting.annotations import attribute_setter
 
 
+__all__ = ("setting_of", )
+
+
 def setting_of_attr(attribute_name: str, *, value_transformer: handler = return_) -> attribute_setter:
     """
     Function to get a function to change an attribute of a given name.

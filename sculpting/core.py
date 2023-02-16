@@ -8,6 +8,14 @@ from sculpting.annotations import attribute_getter_of, attribute_setter_of, attr
 from sculpting.tools import setting_of_attr
 
 
+__all__ = (
+    "Sculpture",
+    "AttributeMap",
+    "attribute_map_for",
+    "property_attribute_map_as"
+)
+
+
 _MAGIC_METHODS_NAMES: Final[Tuple[str]] = (
     "__pos__", "__neg__", "__abs__", "__invert__", "__round__", "__floor__",
     "__ceil__", "__iadd__", "__isub__", "__imul__", "__ifloordiv__", "__idiv__",
