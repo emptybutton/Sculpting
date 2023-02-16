@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Final, Tuple, Iterable, Any, Callable, TypeVar, Generic
 
-from pyhandling import returnly, by, mergely, take, close, post_partial, event_as, raise_
+from pyhandling import returnly, by, documenting_by, mergely, take, close, post_partial, event_as, raise_
 from pyhandling.annotations import dirty, reformer_of, handler
 
 from sculpting.annotations import attribute_getter_of, attribute_setter_of, attribute_getter, attribute_setter
