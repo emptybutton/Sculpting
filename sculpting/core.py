@@ -20,8 +20,21 @@ _MAGIC_METHODS_NAMES: Final[Tuple[str]] = (
 
 
 def _method_proxies_to_attribute(attribute_name: str, method_names: Iterable[str]) -> dirty[reformer_of[type]]:
+    """
+    Function that creates a class decorator for which methods will be created by
+    proxy, the call of which is delegated to an attribute of an instance of the
+    input class.
+    """
+
     @returnly
     def decorator(type_: type, attribute_name: str) -> type:
+        """
+        Class decorator created as a result of calling
+        _method_proxies_to_attribute.
+
+        See _method_proxies_to_attribute for more info.
+        """
+
         if attribute_name[:2] == '__':
             attribute_name = f"_{type_.__name__}{attribute_name}"
 
@@ -36,7 +49,14 @@ def _method_proxies_to_attribute(attribute_name: str, method_names: Iterable[str
 
 
 def _proxy_method_to_attribute(attribute_name: str, method_name: str, type_: type) -> Callable[[object, ...], Any]:
+    """Function to create a proxy method whose call is delegated to an attribute."""
+
     def method_wrapper(instance: object, *args, **kwargs) -> Any:
+        """
+        Method created as a result of calling _proxy_method_to_attribute.
+        See _proxy_method_to_attribute for more info.
+        """
+
         return getattr(getattr(instance, attribute_name), method_name)(*args, **kwargs)
 
     return method_wrapper
