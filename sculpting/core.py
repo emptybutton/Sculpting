@@ -64,6 +64,11 @@ def _proxy_method_to_attribute(attribute_name: str, method_name: str, type_: typ
 
 
 def _dict_value_map(value_transformer: handler, dict_: dict) -> dict:
+    """
+    Map function to create a similarity to the input dictionary, but with
+    transformed values.
+    """
+
     return {
         _: value_transformer(value)
         for _, value in dict_.items()
@@ -84,14 +89,20 @@ class AttributeMap(Generic[AttributeOwnerT]):
     setter: attribute_setter_of[AttributeOwnerT]
 
 
-attribute_map_for: Callable[[str], AttributeMap] = mergely(
-    take(AttributeMap),
-    close(getattr, closer=post_partial),
-    setting_of
+attribute_map_for: Callable[[str], AttributeMap] = documenting_by(
+    """Constructor function for an AttributeMap of a real attribute."""
+)(
+    mergely(
+        take(AttributeMap),
+        close(getattr, closer=post_partial),
+        setting_of_attr
+    )
 )
 
 
 property_attribute_map_as: Callable[[attribute_getter], AttributeMap] = documenting_by(
+    """Constructor function for an AttributeMap of a read-only attribute."""
+)(
     AttributeMap |by| event_as(raise_, AttributeError("Attribute cannot be set"))
 )
 
@@ -148,6 +159,14 @@ class Sculpture(Generic[MappedT]):
     def __convert_attribute_map_resource_to_attribute_map(
         attribute_map_resource: str | AttributeMap[MappedT] | attribute_getter_of[MappedT]
     ) -> AttributeMap[MappedT]:
+        """
+        Function to cast an unstructured virtual attribute resource into a map
+        of that virtual attribute.
+
+        Implements casting according to the rules defined in the Sculpture
+        documentation.
+        """
+
         if isinstance(attribute_map_resource, AttributeMap):
             return attribute_map_resource
         elif callable(attribute_map_resource):
