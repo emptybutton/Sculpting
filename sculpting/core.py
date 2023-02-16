@@ -76,13 +76,18 @@ def setting_of(attribute_name: str) -> attribute_setter:
     return wrapper
 
 
-attribute_owner = TypeVar("attribute_owner")
+AttributeOwnerT = TypeVar("AttributeOwnerT")
 
 
 @dataclass(frozen=True)
-class AttributeMap(Generic[attribute_owner]):
-    getter: attribute_getter_of[attribute_owner]
-    setter: attribute_setter_of[attribute_owner]
+class AttributeMap(Generic[AttributeOwnerT]):
+    """
+    Dataclass that represents some real or virtual attribute.
+    Contains functions to interact with it.
+    """
+
+    getter: attribute_getter_of[AttributeOwnerT]
+    setter: attribute_setter_of[AttributeOwnerT]
 
 
 attribute_map_for: Callable[[str], AttributeMap] = mergely(
@@ -97,15 +102,16 @@ property_attribute_map: Callable[[attribute_getter], AttributeMap] = (
 )
 
 
-mapped = TypeVar("mapped")
+MappedT = TypeVar("mapped")
+
 
 @_method_proxies_to_attribute("__mapped", set(_MAGIC_METHODS_NAMES) - {"__repr__", "__str__"})
 class Sculpture(Generic[MappedT]):
 
     def __init__(
         self,
-        mapped: mapped,
-        **attribute_map_by_virtual_attribute_name: str | AttributeMap[mapped] | attribute_getter_of[mapped]
+        mapped: MappedT,
+        **attribute_map_by_virtual_attribute_name: str | AttributeMap[MappedT] | attribute_getter_of[MappedT]
     ):
         self.__mapped = mapped
         self.__attribute_map_by_virtual_attribute_name = _dict_value_map(
@@ -147,9 +153,8 @@ class Sculpture(Generic[MappedT]):
 
     @staticmethod
     def __convert_attribute_map_resource_to_attribute_map(
-        attribute_map_resource: str | AttributeMap[mapped] | attribute_getter_of[mapped]
-    ) -> AttributeMap[mapped]:
-        if isinstance(attribute_map_resource, AttributeMap[mapped]):
+        attribute_map_resource: str | AttributeMap[MappedT] | attribute_getter_of[MappedT]
+    ) -> AttributeMap[MappedT]:
             return attribute_map_resource
         elif callable(attribute_map_resource):
             return property_attribute_map(attribute_map_resource)
