@@ -116,9 +116,8 @@ class Sculpture(Generic[MappedT]):
     def __repr__(self) -> str:
         return f"Mapped {self.__mapped}"
 
-    def __getattribute__(self, attribute_name: str) -> Any:
-        self.__validate_availability_for(attribute_name)
 
+    def __getattr__(self, attribute_name: str) -> Any:
         if attribute_name[:1] == '_':
             return object.__getattribute__(self, attribute_name)
 
