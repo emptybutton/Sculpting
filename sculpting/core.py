@@ -115,11 +115,11 @@ property_attribute_map_as: Callable[[attribute_getter], AttributeMap] = document
 )
 
 
-MappedT = TypeVar("mapped")
+OriginalT = TypeVar("OriginalT")
 
 
-@_method_proxies_to_attribute("__mapped", set(_MAGIC_METHODS_NAMES) - {"__repr__", "__str__"})
-class Sculpture(Generic[MappedT]):
+@_method_proxies_to_attribute("__original", set(_MAGIC_METHODS_NAMES) - {"__repr__", "__str__"})
+class Sculpture(Generic[OriginalT]):
     """
     Virtual attribute mapping class for a real object.
 
@@ -131,17 +131,17 @@ class Sculpture(Generic[MappedT]):
 
     def __init__(
         self,
-        mapped: MappedT,
-        **attribute_map_by_virtual_attribute_name: str | AttributeMap[MappedT] | attribute_getter_of[MappedT]
+        original: OriginalT,
+        **virtual_attribute_resource_by_virtual_attribute_name: str | AttributeMap[OriginalT] | attribute_getter_of[OriginalT]
     ):
-        self.__mapped = mapped
+        self.__original = original
         self.__attribute_map_by_virtual_attribute_name = _dict_value_map(
-            self.__convert_attribute_map_resource_to_attribute_map,
-            attribute_map_by_virtual_attribute_name
+            self.__convert_virtual_attribute_resource_to_attribute_map,
+            virtual_attribute_resource_by_virtual_attribute_name
         )
 
     def __repr__(self) -> str:
-        return f"Sculpture from {self.__mapped}"
+        return f"Sculpture from {self.__original}"
 
     def __getattr__(self, attribute_name: str) -> Any:
         if attribute_name[:1] == '_':
@@ -150,7 +150,7 @@ class Sculpture(Generic[MappedT]):
         self.__validate_availability_for(attribute_name)
 
         return self.__attribute_map_by_virtual_attribute_name[attribute_name].getter(
-            self.__mapped
+            self.__original
         )
 
     def __setattr__(self, attribute_name: str, attribute_value: Any) -> Any:
@@ -161,7 +161,7 @@ class Sculpture(Generic[MappedT]):
         self.__validate_availability_for(attribute_name)
 
         return self.__attribute_map_by_virtual_attribute_name[attribute_name].setter(
-            self.__mapped,
+            self.__original,
             attribute_value
         )
 
@@ -177,9 +177,9 @@ class Sculpture(Generic[MappedT]):
             )
 
     @staticmethod
-    def __convert_attribute_map_resource_to_attribute_map(
-        attribute_map_resource: str | AttributeMap[MappedT] | attribute_getter_of[MappedT]
-    ) -> AttributeMap[MappedT]:
+    def __convert_virtual_attribute_resource_to_attribute_map(
+        virtual_attribute_resource: str | AttributeMap[OriginalT] | attribute_getter_of[OriginalT]
+    ) -> AttributeMap[OriginalT]:
         """
         Function to cast an unstructured virtual attribute resource into a map
         of that virtual attribute.
@@ -188,9 +188,9 @@ class Sculpture(Generic[MappedT]):
         documentation.
         """
 
-        if isinstance(attribute_map_resource, AttributeMap):
-            return attribute_map_resource
-        elif callable(attribute_map_resource):
             return property_attribute_map_as(attribute_map_resource)
+        if isinstance(virtual_attribute_resource, AttributeMap):
+            return virtual_attribute_resource
+        elif callable(virtual_attribute_resource):
         else:
-            return attribute_map_for(attribute_map_resource)
+            return attribute_map_for(virtual_attribute_resource)
