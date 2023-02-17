@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Final, Tuple, Iterable, Any, Callable, TypeVar, Generic
 
-from pyhandling import returnly, by, documenting_by, mergely, take, close, post_partial, event_as, raise_
 from pyhandling import returnly, by, documenting_by, mergely, take, close, post_partial, event_as, raise_, then
 from pyhandling.annotations import dirty, reformer_of, handler
 
