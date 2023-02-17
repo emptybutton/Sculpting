@@ -123,7 +123,7 @@ class Sculpture(Generic[OriginalT]):
     """
     Virtual attribute mapping class for a real object.
 
-    Virtual attributes are given keyword arguments as keys.
+    Virtual attribute names are given keyword arguments as keys.
     Values can be either the name of a real attribute of the original object, an
     AttributeMap, or a function to get the value of this attribute from the
     original object (in which case the attribute cannot be changed).
