@@ -14,6 +14,7 @@ __all__ = (
     "attribute_map_for",
     "read_only_attribute_map_as",
     "read_only_attribute_map_for",
+    "changing_attribute_map_for"
 )
 
 
@@ -121,6 +122,15 @@ read_only_attribute_map_for: Callable[[str], AttributeMap] = documenting_by(
 )(
     close(getattr, closer=post_partial) |then>> read_only_attribute_map_as
 )
+
+
+def changing_attribute_map_for(attribute_name: str, changer: reformer_of[Any]) -> AttributeMap:
+    """Function to create a map for an attribute whose value will change when set."""
+
+    return AttributeMap(
+        getattr |by| attribute_name,
+        setting_of_attr(attribute_name, value_transformer=changer)
+    )
 
 
 OriginalT = TypeVar("OriginalT")
