@@ -10,7 +10,7 @@ from sculpting.tools import setting_of_attr
 
 class AttributeKeeper:
     def __init__(self, **attributes):
-        self.__dict__ = dict(**attributes)
+        self.__dict__ = attributes
 
 
 @mark.parametrize(
