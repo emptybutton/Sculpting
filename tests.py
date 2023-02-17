@@ -122,7 +122,7 @@ def test_attribute_setter(
         )
     ]
 )
-def test_attribute_setter_rasing(
+def test_attribute_setter_error_raising(
     obj: object,
     attribute_setter: attribute_setter,
     input_attribute_value: Any,
