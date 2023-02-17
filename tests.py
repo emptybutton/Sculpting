@@ -119,7 +119,13 @@ def test_attribute_setter(
             setting_of_attr("non_existent_attribute"),
             "_",
             AttributeError
-        )
+        ),
+        (
+            Sculpture(AttributeKeeper(value=4), only_read_value=read_only_attribute_map_for("value")),
+            setting_of_attr("only_read_value"),
+            "_",
+            AttributeError
+        ),
     ]
 )
 def test_attribute_setter_error_raising(

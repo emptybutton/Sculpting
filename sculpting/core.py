@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Final, Tuple, Iterable, Any, Callable, TypeVar, Generic
 
 from pyhandling import returnly, by, documenting_by, mergely, take, close, post_partial, event_as, raise_
+from pyhandling import returnly, by, documenting_by, mergely, take, close, post_partial, event_as, raise_, then
 from pyhandling.annotations import dirty, reformer_of, handler
 
 from sculpting.annotations import attribute_getter_of, attribute_setter_of, attribute_getter, attribute_setter
@@ -13,6 +14,7 @@ __all__ = (
     "AttributeMap",
     "attribute_map_for",
     "read_only_attribute_map_as",
+    "read_only_attribute_map_for",
 )
 
 
@@ -112,6 +114,13 @@ read_only_attribute_map_as: Callable[[attribute_getter], AttributeMap] = documen
     """Constructor function for an AttributeMap of a read-only attribute."""
 )(
     AttributeMap |by| event_as(raise_, AttributeError("Attribute cannot be set"))
+)
+
+
+read_only_attribute_map_for: Callable[[str], AttributeMap] = documenting_by(
+    """Constructor function for an AttributeMap of a read-only real attribute."""
+)(
+    close(getattr, closer=post_partial) |then>> read_only_attribute_map_as
 )
 
 
