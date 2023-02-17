@@ -110,14 +110,14 @@ def test_attribute_setter(
     [
         (
             AttributeKeeper(),
-            "value without meaning",
             read_only_attribute_map_as(getattr |by| "non_existent_attribute").setter,
+            "_",
             AttributeError
         ),
         (
             Sculpture(AttributeKeeper(user_id=4), id="user_id"),
             setting_of_attr("non_existent_attribute"),
-            "value without meaning",
+            "_",
             AttributeError
         )
     ]
