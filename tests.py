@@ -1,11 +1,11 @@
 from typing import Any, Type
 
-from pyhandling import by, then, operation_by, execute_operation, to, ArgumentPack
+from pyhandling import times, by, then, operation_by, execute_operation, to, ArgumentPack
 from pytest import mark, raises
 
 from sculpting.annotations import attribute_getter, attribute_setter
 from sculpting.core import *
-from sculpting.tools import setting_of_attr
+from sculpting.tools import setting_of_attr, once
 
 
 class AttributeKeeper:
@@ -27,6 +27,14 @@ def test_setting_of_attr(attribute_name: str, attribute_value: Any):
     setting_of_attr(attribute_name)(obj, attribute_value)
 
     assert getattr(obj, attribute_name) == attribute_value
+
+
+def test_once():
+    runner = times(1)
+    once_runner = once(runner)
+
+    assert tuple(once_runner() for _ in range(8)) == (True, ) * 8
+    assert tuple(runner() for _ in range(8)) == (False, True) * 4
 
 
 @mark.parametrize(
