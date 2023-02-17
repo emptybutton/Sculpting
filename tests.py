@@ -35,7 +35,7 @@ def test_setting_of_attr(attribute_name: str, attribute_value: Any):
         (AttributeKeeper(id=42), attribute_map_for('id').getter, 42),
         (
             AttributeKeeper(name="undefined"),
-            property_attribute_map_as(getattr |by| 'name').getter,
+            read_only_attribute_map_as(getattr |by| 'name').getter,
             "undefined"
         ),
         (Sculpture(AttributeKeeper(next_node=None), next="next_node"), getattr |by| 'next', None),
@@ -110,8 +110,8 @@ def test_attribute_setter(
     [
         (
             AttributeKeeper(),
-            property_attribute_map_as(getattr |by| "non_existent_attribute").setter,
             "value without meaning",
+            read_only_attribute_map_as(getattr |by| "non_existent_attribute").setter,
             AttributeError
         ),
         (

@@ -12,7 +12,7 @@ __all__ = (
     "Sculpture",
     "AttributeMap",
     "attribute_map_for",
-    "property_attribute_map_as"
+    "read_only_attribute_map_as",
 )
 
 
@@ -108,7 +108,7 @@ attribute_map_for: Callable[[str], AttributeMap] = documenting_by(
 )
 
 
-property_attribute_map_as: Callable[[attribute_getter], AttributeMap] = documenting_by(
+read_only_attribute_map_as: Callable[[attribute_getter], AttributeMap] = documenting_by(
     """Constructor function for an AttributeMap of a read-only attribute."""
 )(
     AttributeMap |by| event_as(raise_, AttributeError("Attribute cannot be set"))
@@ -188,9 +188,9 @@ class Sculpture(Generic[OriginalT]):
         documentation.
         """
 
-            return property_attribute_map_as(attribute_map_resource)
         if isinstance(virtual_attribute_resource, AttributeMap):
             return virtual_attribute_resource
         elif callable(virtual_attribute_resource):
+            return read_only_attribute_map_as(virtual_attribute_resource)
         else:
             return attribute_map_for(virtual_attribute_resource)
