@@ -60,7 +60,8 @@ transforming_sculpture = Sculpture(
         getattr |by| "id_of_others",
         setting_of_attr("id_of_others", value_transformer=tuple)
     ),
-    synonym_for_id_of_others=changing_attribute_map_for("id_of_others", tuple) # Shortcut for recording above
+    # Shortcut for recording above
+    synonym_for_id_of_others=changing_attribute_map_for("id_of_others", tuple)
 )
 
 transforming_sculpture.synonym_for_id_of_others = range(1, 5)
