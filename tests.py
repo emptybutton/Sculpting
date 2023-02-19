@@ -170,3 +170,8 @@ def test_sculpture_attribute_mapping(
     setattr(sculpture, virtual_attribute_name, new_attribute_value)
 
     assert getattr(sculpture, virtual_attribute_name) == getattr(mapped, original_attribute_name)
+
+
+@mark.parametrize("obj", [(AttributeKeeper(value=42), 42, None)])
+def test_original_from(obj: object):
+    assert material_of(Sculpture(obj)) is obj

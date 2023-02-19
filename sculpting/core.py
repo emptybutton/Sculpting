@@ -12,6 +12,7 @@ from sculpting.tools import setting_of_attr
 
 __all__ = (
     "Sculpture",
+    "material_of",
     "AttributeMap",
     "attribute_map_for",
     "read_only_attribute_map_as",
@@ -253,3 +254,10 @@ class Sculpture(_DynamicAttributeKepper, Generic[OriginalT]):
 
     def _set_attribute_value_for(self, attribute_name: str, attribute_value: Any, attribute_map: AttributeMap[OriginalT]) -> Any:
         return attribute_map.setter(self.__original, attribute_value)
+
+
+material_of: Callable[[Sculpture[OriginalT]], OriginalT] = documenting_by(
+    """Function to get the object on which the input sculpture is based."""
+)(
+    getattr |by| "_Sculpture__original"
+)
