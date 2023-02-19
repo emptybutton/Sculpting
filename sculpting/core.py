@@ -162,6 +162,7 @@ class _DynamicAttributeKepper(Generic[AttributeOwnerT], ABC):
     def __init__(
         self,
         *,
+        _default_attribute_resource_factory: Optional[Callable[[str], _attribute_resource_for[AttributeOwnerT]]] = None,
         **attribute_resource_by_attribute_name: _attribute_resource_for[AttributeOwnerT],
     ):
         self._attribute_map_by_attribute_name = _dict_value_map(
@@ -169,6 +170,15 @@ class _DynamicAttributeKepper(Generic[AttributeOwnerT], ABC):
             attribute_resource_by_attribute_name
         )
 
+        self._default_attribute_map_for = (
+            _default_attribute_resource_factory |then>> _attribute_map_from
+            if _default_attribute_resource_factory is not None
+            else "Attribute \"{}\" is not allowed in {{}}".format |then>> mergely(
+                take(AttributeMap),
+                (getattr |by| "format") |then>> next_action_decorator_of(AttributeError |then>> raise_),
+                close(lambda template, obj, _: raise_(AttributeError(template.format(obj.__repr__()))))
+            )
+        )
 
     def __getattr__(self, attribute_name: str) -> Any:
         return (
@@ -202,6 +212,8 @@ class _DynamicAttributeKepper(Generic[AttributeOwnerT], ABC):
     def __attribute_map_for(self, attribute_name: str) -> AttributeMap[AttributeOwnerT]:
         return (
             self._attribute_map_by_attribute_name[attribute_name]
+            if attribute_name in self._attribute_map_by_attribute_name.keys()
+            else self._default_attribute_map_for(attribute_name)
         )
 
 
