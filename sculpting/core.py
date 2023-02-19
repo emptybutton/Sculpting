@@ -160,6 +160,11 @@ def _attribute_map_from(
 
 
 class _DynamicAttributeKepper(Generic[AttributeOwnerT], ABC):
+    """
+    Class for managing attributes by delegating these responsibilities to
+    functions.
+    """
+
     def __init__(
         self,
         *,
@@ -204,11 +209,11 @@ class _DynamicAttributeKepper(Generic[AttributeOwnerT], ABC):
 
     @abstractmethod
     def _attribute_value_for(self, attribute_name: str, attribute_map: AttributeMap[AttributeOwnerT]) -> Any:
-        pass
+        """Method for getting the value for an attribute by its map."""
 
     @abstractmethod
     def _set_attribute_value_for(self, attribute_name: str, attribute_value: Any, attribute_map: AttributeMap[AttributeOwnerT]) -> Any:
-        pass
+        """Method for setting a value for an attribute by its map."""
 
     def __attribute_map_for(self, attribute_name: str) -> AttributeMap[AttributeOwnerT]:
         return (
