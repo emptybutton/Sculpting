@@ -235,11 +235,11 @@ class Sculpture(_DynamicAttributeKepper, Generic[OriginalT]):
         self,
         original: OriginalT,
         *,
-        default_attribute_resource_factory: Optional[_attribute_resource_for[OriginalT]] = None,
+        _default_attribute_resource_factory: Optional[Callable[[str], _attribute_resource_for[AttributeOwnerT]]] = None,
         **attribute_resource_by_attribute_name: _attribute_resource_for[OriginalT],
     ):
         super().__init__(
-            default_attribute_resource_factory=default_attribute_resource_factory,
+            _default_attribute_resource_factory=_default_attribute_resource_factory,
             **attribute_resource_by_attribute_name
         )
 
