@@ -1,15 +1,18 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Final, Tuple, Iterable, Any, Callable, TypeVar, Generic
+from typing import Final, Tuple, Iterable, Any, Callable, TypeVar, Generic, Optional, Union
 
-from pyhandling import returnly, by, documenting_by, mergely, take, close, post_partial, event_as, raise_, then
+from pyannotating import AnnotationTemplate, input_annotation
+from pyhandling import returnly, by, documenting_by, mergely, take, close, post_partial, event_as, raise_, then, to, next_action_decorator_of
 from pyhandling.annotations import dirty, reformer_of, handler
 
-from sculpting.annotations import attribute_getter_of, attribute_setter_of, attribute_getter, attribute_setter
+from sculpting.annotations import attribute_getter_of, attribute_setter_of, attribute_getter
 from sculpting.tools import setting_of_attr
 
 
 __all__ = (
     "Sculpture",
+    "material_of",
     "AttributeMap",
     "attribute_map_for",
     "read_only_attribute_map_as",
@@ -133,11 +136,98 @@ def changing_attribute_map_for(attribute_name: str, changer: reformer_of[Any]) -
     )
 
 
+_attribute_resource_for = (AnnotationTemplate |to| Union)([
+    str,
+    AnnotationTemplate(AttributeMap, [input_annotation]),
+    AnnotationTemplate(attribute_getter_of, [input_annotation])
+])
+
+
+def _attribute_map_from(
+    attribute_resource: _attribute_resource_for[AttributeOwnerT]
+) -> AttributeMap[AttributeOwnerT]:
+    """
+    Function to cast an unstructured attribute resource into a map of that
+    attribute.
+    """
+
+    if isinstance(attribute_resource, AttributeMap):
+        return attribute_resource
+    elif callable(attribute_resource):
+        return read_only_attribute_map_as(attribute_resource)
+    else:
+        return attribute_map_for(attribute_resource)
+
+
+class _DynamicAttributeKepper(Generic[AttributeOwnerT], ABC):
+    """
+    Class for managing attributes by delegating these responsibilities to
+    functions.
+    """
+
+    def __init__(
+        self,
+        *,
+        _default_attribute_resource_factory: Optional[Callable[[str], _attribute_resource_for[AttributeOwnerT]]] = None,
+        **attribute_resource_by_attribute_name: _attribute_resource_for[AttributeOwnerT],
+    ):
+        self._attribute_map_by_attribute_name = _dict_value_map(
+            _attribute_map_from,
+            attribute_resource_by_attribute_name
+        )
+
+        self._default_attribute_map_for = (
+            _default_attribute_resource_factory |then>> _attribute_map_from
+            if _default_attribute_resource_factory is not None
+            else "Attribute \"{}\" is not allowed in {{}}".format |then>> mergely(
+                take(AttributeMap),
+                (getattr |by| "format") |then>> next_action_decorator_of(AttributeError |then>> raise_),
+                close(lambda template, obj, _: raise_(AttributeError(template.format(obj.__repr__()))))
+            )
+        )
+
+    def __getattr__(self, attribute_name: str) -> Any:
+        return (
+            object.__getattribute__(self, attribute_name)
+            if attribute_name[:1] == '_'
+            else self._attribute_value_for(
+                attribute_name,
+                self.__attribute_map_for(attribute_name)
+            )
+        )
+
+    def __setattr__(self, attribute_name: str, attribute_value: Any) -> Any:
+        return (
+            super().__setattr__(attribute_name, attribute_value)
+            if attribute_name[:1] == '_'
+            else self._set_attribute_value_for(
+                attribute_name,
+                attribute_value,
+                self.__attribute_map_for(attribute_name)
+            )
+        )
+
+    @abstractmethod
+    def _attribute_value_for(self, attribute_name: str, attribute_map: AttributeMap[AttributeOwnerT]) -> Any:
+        """Method for getting the value for an attribute by its map."""
+
+    @abstractmethod
+    def _set_attribute_value_for(self, attribute_name: str, attribute_value: Any, attribute_map: AttributeMap[AttributeOwnerT]) -> Any:
+        """Method for setting a value for an attribute by its map."""
+
+    def __attribute_map_for(self, attribute_name: str) -> AttributeMap[AttributeOwnerT]:
+        return (
+            self._attribute_map_by_attribute_name[attribute_name]
+            if attribute_name in self._attribute_map_by_attribute_name.keys()
+            else self._default_attribute_map_for(attribute_name)
+        )
+
+
 OriginalT = TypeVar("OriginalT")
 
 
 @_method_proxies_to_attribute("__original", set(_MAGIC_METHODS_NAMES) - {"__repr__", "__str__"})
-class Sculpture(Generic[OriginalT]):
+class Sculpture(_DynamicAttributeKepper, Generic[OriginalT]):
     """
     Virtual attribute mapping class for a real object.
 
@@ -150,65 +240,29 @@ class Sculpture(Generic[OriginalT]):
     def __init__(
         self,
         original: OriginalT,
-        **virtual_attribute_resource_by_virtual_attribute_name: str | AttributeMap[OriginalT] | attribute_getter_of[OriginalT]
+        *,
+        _default_attribute_resource_factory: Optional[Callable[[str], _attribute_resource_for[AttributeOwnerT]]] = None,
+        **attribute_resource_by_attribute_name: _attribute_resource_for[OriginalT],
     ):
-        self.__original = original
-        self.__attribute_map_by_virtual_attribute_name = _dict_value_map(
-            self.__convert_virtual_attribute_resource_to_attribute_map,
-            virtual_attribute_resource_by_virtual_attribute_name
+        super().__init__(
+            _default_attribute_resource_factory=_default_attribute_resource_factory,
+            **attribute_resource_by_attribute_name
         )
+
+        self.__original = original
 
     def __repr__(self) -> str:
         return f"Sculpture from {self.__original}"
 
-    def __getattr__(self, attribute_name: str) -> Any:
-        if attribute_name[:1] == '_':
-            return object.__getattribute__(self, attribute_name)
+    def _attribute_value_for(self, attribute_name: str, attribute_map: AttributeMap[OriginalT]) -> Any:
+        return attribute_map.getter(self.__original)
 
-        self.__validate_availability_for(attribute_name)
+    def _set_attribute_value_for(self, attribute_name: str, attribute_value: Any, attribute_map: AttributeMap[OriginalT]) -> Any:
+        return attribute_map.setter(self.__original, attribute_value)
 
-        return self.__attribute_map_by_virtual_attribute_name[attribute_name].getter(
-            self.__original
-        )
 
-    def __setattr__(self, attribute_name: str, attribute_value: Any) -> Any:
-        if attribute_name[:1] == '_':
-            super().__setattr__(attribute_name, attribute_value)
-            return
-
-        self.__validate_availability_for(attribute_name)
-
-        return self.__attribute_map_by_virtual_attribute_name[attribute_name].setter(
-            self.__original,
-            attribute_value
-        )
-
-    def __validate_availability_for(self, attribute_name: str) -> None:
-        """
-        Method of validation and possible subsequent error about the absence
-        of such a virtual attribute.
-        """
-
-        if attribute_name not in self.__attribute_map_by_virtual_attribute_name.keys():
-            raise AttributeError(
-                f"Attribute \"{attribute_name}\" is not allowed in {self.__repr__()}"
-            )
-
-    @staticmethod
-    def __convert_virtual_attribute_resource_to_attribute_map(
-        virtual_attribute_resource: str | AttributeMap[OriginalT] | attribute_getter_of[OriginalT]
-    ) -> AttributeMap[OriginalT]:
-        """
-        Function to cast an unstructured virtual attribute resource into a map
-        of that virtual attribute.
-
-        Implements casting according to the rules defined in the Sculpture
-        documentation.
-        """
-
-        if isinstance(virtual_attribute_resource, AttributeMap):
-            return virtual_attribute_resource
-        elif callable(virtual_attribute_resource):
-            return read_only_attribute_map_as(virtual_attribute_resource)
-        else:
-            return attribute_map_for(virtual_attribute_resource)
+material_of: Callable[[Sculpture[OriginalT]], OriginalT] = documenting_by(
+    """Function to get the object on which the input sculpture is based."""
+)(
+    getattr |by| "_Sculpture__original"
+)

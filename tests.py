@@ -1,6 +1,6 @@
 from typing import Any, Type
 
-from pyhandling import times, by, then, operation_by, execute_operation, to, ArgumentPack
+from pyhandling import times, by, then, operation_by, execute_operation, to, ArgumentPack, event_as, raise_
 from pytest import mark, raises
 
 from sculpting.annotations import attribute_getter, attribute_setter
@@ -134,6 +134,14 @@ def test_attribute_setter(
             "_",
             AttributeError
         ),
+        (
+            (Sculpture |to| AttributeKeeper())(
+                _default_attribute_resource_factory=TypeError |then>> (event_as |to| raise_)
+            ),
+            setting_of_attr("non_existent_attribute"),
+            "_",
+            TypeError
+        )
     ]
 )
 def test_attribute_setter_error_raising(
@@ -162,3 +170,8 @@ def test_sculpture_attribute_mapping(
     setattr(sculpture, virtual_attribute_name, new_attribute_value)
 
     assert getattr(sculpture, virtual_attribute_name) == getattr(mapped, original_attribute_name)
+
+
+@mark.parametrize("obj", [(AttributeKeeper(value=42), 42, None)])
+def test_original_from(obj: object):
+    assert material_of(Sculpture(obj)) is obj
